@@ -184,6 +184,7 @@ object MarathonApplication {
   val backoffFactorLiteral = "backoffFactor"
   val upgradeStrategyLiteral = "upgradeStrategy"
   val acceptedResourceRolesLiteral = "acceptedResourceRoles"
+  val tasksLiteral = "tasks"
 
   //Fixed Values
   val TcpValue = "tcp"
@@ -246,7 +247,7 @@ object Docker {
 
 case class DockerParameter(key: String, value: String)
 
-object DockerParameter {
+object DockerParameter {  
 
   implicit val writes: Writes[DockerParameter] = Json.writes[DockerParameter]
   implicit val reads: Reads[DockerParameter] = Json.reads[DockerParameter]
@@ -312,4 +313,47 @@ object MarathonHealthCheckCommand {
 
   implicit val writes: Writes[MarathonHealthCheckCommand] = Json.writes[MarathonHealthCheckCommand]
   implicit val reads: Reads[MarathonHealthCheckCommand] = Json.reads[MarathonHealthCheckCommand]
+}
+
+case class HealthCheckResults(alive: Boolean,
+                             consecutiveFailures: Int,
+                             firstSuccess: String,
+                             lastFailure: String,
+                             lastSuccess: String,
+                             lastFailureCause: String,
+                             taskId: String)
+
+object HealthCheckResults {
+  implicit val writes: Writes[HealthCheckResults] = Json.writes[HealthCheckResults]
+  implicit val reads: Reads[HealthCheckResults] = Json.reads[HealthCheckResults]
+}
+
+
+sealed abstract class StatusTask(status: String)
+
+case object TASK_STAGING extends StatusTask("TASK_STAGING")
+case object TASK_STARTING extends StatusTask("TASK_STARTING")
+case object TASK_RUNNING extends StatusTask("TASK_RUNNING")
+case object TASK_FINISHED extends StatusTask("TASK_FINISHED")
+case object TASK_FAILED extends StatusTask("TASK_FAILED")
+case object TASK_KILLING extends StatusTask("TASK_KILLING")
+case object TASK_KILLED extends StatusTask("TASK_KILLED")
+case object TASK_LOST extends StatusTask("TASK_LOST")
+
+case class Task( id: String,
+                 slaveId: String,
+                 host: String,
+                 state: StatusTask,
+                 startedAt: String,
+                 stagedAt: String,
+                 ports: Array[Int],
+                 version: String,
+                 ipAddresses: IpAddress,
+                 appId: String,
+                 healthCheckResults: Array[HealthCheckResults]
+               )
+
+object Task {
+  implicit val writes: Writes[Task] = Json.writes[Task]
+  implicit val reads: Reads[Task] = Json.reads[Task]
 }
