@@ -11,7 +11,7 @@
 
     <groupId>com.stratio.tikitakka</groupId>
     <artifactId>parent</artifactId>
-    <version>0.4.0-RC4-SNAPSHOT</version>
+    <version>0.4.0-RC4</version>
 
     <name>Stratio Tiki-Takka Parent</name>
     <description>Discovery and Orchestration over Marathon</description>
