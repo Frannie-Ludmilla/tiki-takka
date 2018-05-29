@@ -75,11 +75,15 @@ trait ConsulUtils extends LogUtils {
   }
 
   private def createRequest(url: String, resource: String, method: HttpMethod, body: Option[String]): HttpRequest = {
-    val (host, scheme, port) = getUriParts(url) match {
-      case Some((h, s, p)) => (h, s, p)
+    val (host, scheme, request, port) = getUriParts(url) match {
+      case Some((h, s, r, p)) => (h, s, r, p)
     }
 
-    val uri = Uri.from(host = host, path = s"/$resource")
+    val req = request match {
+      case Some(r) => s"/$r/"
+      case None => "/"
+    }
+    val uri = Uri.from(host = host, path = req.concat(resource))
     val uriCompleted = (port match {
       case Some(p) => uri.withPort(p)
       case None => uri
@@ -92,10 +96,14 @@ trait ConsulUtils extends LogUtils {
       entity = body.map(body => HttpEntity(MediaTypes.`application/json`, body)).getOrElse(""))
   }
 
-  val uriPattern = "^((https?):\\/\\/)?([^:]+)(:(\\d+)){0,1}".r
-  def getUriParts(uri: String): Option[(String, Option[String], Option[Int])] = uriPattern.findFirstMatchIn(uri).map(s => (
+  val uriPattern = "^((https?):\\/\\/)?([^:\\/]+)(:(\\d+)){0,1}(\\/(.*))?".r
+  def getUriParts(uri: String): Option[(String, Option[String], Option[String], Option[Int])] = uriPattern.findFirstMatchIn(uri).map(s => (
     s.group(3),
     s.group(2) match {
+      case null => None
+      case value => Some(value)
+    },
+    s.group(7)match {
       case null => None
       case value => Some(value)
     },
