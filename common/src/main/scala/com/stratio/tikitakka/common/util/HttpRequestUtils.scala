@@ -52,7 +52,7 @@ trait HttpRequestUtils extends LogUtils {
     } yield entity
   }
 
-  private def createRequest(url: String, resource: String, method: HttpMethod, body: Option[JsValue], cookies: Seq[HttpCookie]): HttpRequest = {
+  private[util] def createRequest(url: String, resource: String, method: HttpMethod, body: Option[JsValue], cookies: Seq[HttpCookie]): HttpRequest = {
     val (host, scheme, request, port) = getUriParts(url) match {
       case Some((h, s, r, p)) => (h, s, r, p)
     }
@@ -61,7 +61,12 @@ trait HttpRequestUtils extends LogUtils {
       case Some(r) => s"/$r/"
       case None => "/"
     }
-    val uri = Uri.from(host = host, path = req.concat(resource))
+    val resourceQuery = "(?<=\\?).*".r.findFirstIn(resource)
+    val resourceWithoutQuery = ".*(?=\\?)".r.findFirstIn(resource)
+    val uri = Uri.from(host = host,
+      path = resourceWithoutQuery.fold(req){ res => req.concat(res)},
+      queryString = resourceQuery
+    )
     val uriCompleted = (port match {
       case Some(p) => uri.withPort(p)
       case None => uri
