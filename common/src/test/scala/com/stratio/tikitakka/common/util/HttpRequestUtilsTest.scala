@@ -41,5 +41,13 @@ class HttpRequestUtilsTest extends TestKit(ActorSystem("HttpRequestUtils"))
         actualReq._2.toString() should equal (baseUrl.concat("/"+resource))
       }
     }
+    "passed a resource without query" should{
+      "create a correct url" in {
+        val baseUrl = "https://megadev.labs.stratio.com/service/marathon"
+        val resource = "v2/groups/anyApp/instanceName/WithWorkflows"
+        val actualReq = createRequest(baseUrl, resource, HttpMethods.GET, None, Seq.empty[HttpCookie])
+        actualReq._2.toString() should equal (baseUrl.concat("/"+resource))
+      }
+    }
   }
 }

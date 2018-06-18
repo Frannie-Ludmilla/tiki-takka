@@ -64,7 +64,7 @@ trait HttpRequestUtils extends LogUtils {
     val resourceQuery = "(?<=\\?).*".r.findFirstIn(resource)
     val resourceWithoutQuery = ".*(?=\\?)".r.findFirstIn(resource)
     val uri = Uri.from(host = host,
-      path = resourceWithoutQuery.fold(req){ res => req.concat(res)},
+      path = resourceWithoutQuery.fold(req.concat(resource)){ res => req.concat(res)},
       queryString = resourceQuery
     )
     val uriCompleted = (port match {
